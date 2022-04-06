@@ -128,6 +128,8 @@ export class statData
 
     add_stat(to_add:statData)
     {
+        to_add.update();
+
         this.main_stat_pure += to_add.main_stat_pure;
         this.main_stat_rate += to_add.main_stat_rate;
         this.main_stat_abs += to_add.main_stat_abs;
@@ -144,11 +146,13 @@ export class statData
         this.cri_dmg += to_add.cri_dmg;
 
         this.update();
-
+        
     }
 
     sub_stat(to_sub:statData)
     {
+        to_sub.update();
+
         this.main_stat_pure -= to_sub.main_stat_pure;
         this.main_stat_rate -= to_sub.main_stat_rate;
         this.main_stat_abs -= to_sub.main_stat_abs;
@@ -293,15 +297,15 @@ export class jobData
         var ign_coeff = Math.max(0, 1 - monster_guard / 100 * (1-statinfo.ign_dmg / 100));
         var cri_coeff = Math.min(statinfo.cri_rate,100)/100 * (0.35 + statinfo.cri_dmg/100) + 1;
        
-        console.log("coeffs")
-        console.log(prof_coeff)
-        console.log(weap_coeff)
-        console.log(stat_coeff)
-        console.log(att_coeff)
-        console.log(dmg_coeff)
-        console.log(final_coeff)
-        console.log(ign_coeff)
-        console.log(cri_coeff)
+        // console.log("coeffs")
+        // console.log(prof_coeff)
+        // console.log(weap_coeff)
+        // console.log(stat_coeff)
+        // console.log(att_coeff)
+        // console.log(dmg_coeff)
+        // console.log(final_coeff)
+        // console.log(ign_coeff)
+        // console.log(cri_coeff)
 
         return Math.floor(prof_coeff * weap_coeff * stat_coeff * att_coeff * dmg_coeff * final_coeff * ign_coeff * cri_coeff);
     }
@@ -332,7 +336,7 @@ export class TemplateData
 
 
 
-    constructor(gradeName:gradeNames, jobData:jobData, monGaurd:number, final_dmg:number)
+    constructor(gradeName:gradeNames, jobData:jobData, monGaurd:number, final_dmg:number, soul_comp:number)
     {
         this.monster_gaurd_rate = monGaurd;
         this.gradeName_ = gradeName;
@@ -353,6 +357,7 @@ export class TemplateData
         //무기공 보정
         this.gradeEquipStat_.att_mag -= jobMainWeapAtt["히어로"][equipjobWeapattComp[gradeName]];
         this.gradeEquipStat_.att_mag += jobMainWeapAtt[jobData.jobName_][equipjobWeapattComp[gradeName]];
+
         //특이 직업은 별도로 빼버림
         if(this.jobName_ == '제논')
         {
@@ -365,6 +370,9 @@ export class TemplateData
             this.gradeEquipStat_.add_stat(new statData(equipCoreAdd_demon[gradeName]));
         }
         this.gradeEquipStat_.add_stat(this.jobData_.doping_);
+
+        //소울 보정
+        this.gradeEquipStat_.att_mag_rate -= soul_comp * 3;
         
         //메용, 시그 보정
         //아 씨발 진짜 데벤져 병신같은 직업 좆같아서 못해먹겠네
@@ -628,16 +636,16 @@ export class UserStatdata
 
         this.att_mag = Math.ceil(this.stat_atk/((this.sub_stat+4*actual_main_stat)*0.01*job_weap_coeff*(1+this.dmg*0.01)*(1+this.final_dmg*0.01)*(1+this.att_mag_rate*0.01)))
         
-        console.log("췡")
-        console.log(this.stat_pure)
-        console.log(this.stat_rate)
-        console.log(this.stat_abs)
-        console.log(this.sub_stat)
-        console.log(this.stat_atk)
-        console.log(this.dmg)
-        console.log(this.att_mag_rate)
-        console.log(this.final_dmg)
-        console.log(this.att_mag)
+        // console.log("췡")
+        // console.log(this.stat_pure)
+        // console.log(this.stat_rate)
+        // console.log(this.stat_abs)
+        // console.log(this.sub_stat)
+        // console.log(this.stat_atk)
+        // console.log(this.dmg)
+        // console.log(this.att_mag_rate)
+        // console.log(this.final_dmg)
+        // console.log(this.att_mag)
 
         this.statData_ = new statData([this.stat_pure, this.stat_rate, this.stat_abs, this.sub_stat,0,0,this.att_mag,this.att_mag_rate,this.dmg+this.link_dmg,this.boss_dmg,this.final_dmg,this.ign_dmg,100,this.cri_dmg]);
 

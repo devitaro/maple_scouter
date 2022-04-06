@@ -8,39 +8,49 @@
     <mat-card>
       <mat-card-subtitle>직업 정보</mat-card-subtitle>
       <mat-card-content>
-        <div>
-          <mat-form-field>
-            <mat-label> 직업 선택 </mat-label>
-            <mat-select 
-            [(value)]="jobName"
-            (selectionChange)=" initializeJobValues()"
-            appSelectOnFocus>
-              <mat-option *ngFor="let job of job_names" [value]="job">{{job}}</mat-option>
-            </mat-select>
-          </mat-form-field>
-          <mat-form-field *ngIf="(jobName == '데몬어벤져') || (jobName == '데몬슬레이어')" class="w-120">          
-            <mat-label> 루포실 유무 </mat-label>
-            <mat-select 
-            [(ngModel)]="basicData[3]"
-            (selectionChange)="initializeJobValues()">
-                <mat-option [value]="1">루포실 사용</mat-option>
-                <mat-option [value]="0">루포실 미사용</mat-option>
-              </mat-select>
+      <div>
+        <mat-form-field class="w-120">
+          <mat-label> 직업 선택 </mat-label>
+          <mat-select 
+          [(value)]="jobName"
+          (selectionChange)=" initializeJobValues()"
+          appSelectOnFocus>
+            <mat-option *ngFor="let job of job_names" [value]="job">{{job}}</mat-option>
+          </mat-select>
         </mat-form-field>
-        </div>
-        <div>
-          <mat-form-field>          
-              <mat-label> 서버 </mat-label>
-              <mat-select
-              [(ngModel)]="basicData[0]"
-              (selectionChange)="initializeJobValues()">
-                  <mat-option [value]="0">본섭</mat-option>
-                  <mat-option [value]="1">리부트</mat-option>
-                </mat-select>
-          </mat-form-field>
+        <mat-form-field *ngIf="(jobName == '데몬어벤져') || (jobName == '데몬슬레이어')" class="w-120">          
+          <mat-label> 루포실 유무 </mat-label>
+          <mat-select 
+          [(ngModel)]="basicData[3]"
+          (selectionChange)="initializeJobValues()">
+              <mat-option [value]="1">루포실 사용</mat-option>
+              <mat-option [value]="0">루포실 미사용</mat-option>
+            </mat-select>
+      </mat-form-field>
       </div>
       <div>
-          <mat-form-field>      
+        <mat-form-field class="w-120">          
+            <mat-label> 서버 </mat-label>
+            <mat-select
+            [(ngModel)]="basicData[0]"
+            (selectionChange)="initializeJobValues()">
+                <mat-option [value]="0">본섭</mat-option>
+                <mat-option [value]="1">리부트</mat-option>
+              </mat-select>
+        </mat-form-field>
+        <mat-form-field class="w-120">          
+          <mat-label > 몬스터 방어율 </mat-label>
+          <mat-select
+          [(ngModel)]="monster_guard"
+          (selectionChange)="initializeJobValues()">
+              <mat-option [value]="50">방어율 50%</mat-option>
+              <mat-option [value]="300">방어율 300%</mat-option>
+              <mat-option [value]="380">방어율 380%</mat-option>
+            </mat-select>
+      </mat-form-field>
+      </div>
+      <div>
+          <mat-form-field class="w-120">      
               <mat-label> 레벨 </mat-label>
               <input
                 type="number"
@@ -50,6 +60,15 @@
                 appSelectOnFocus
               />
           </mat-form-field>
+          <mat-form-field class="w-120">          
+            <mat-label> 특수 소울 여부 </mat-label>
+            <mat-select
+            [(ngModel)]="basicData[4]"
+            (selectionChange)="initializeJobValues()">
+                <mat-option [value]="0">사용 안함</mat-option>
+                <mat-option [value]="1">무공/에피네아</mat-option>
+              </mat-select>
+        </mat-form-field>
       </div>
      
         <div>
@@ -89,6 +108,7 @@
       [link_table]="link_table"
     >  
     </app-link-table>
+    
   </div>
   <div>
     
