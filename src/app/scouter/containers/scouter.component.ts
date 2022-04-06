@@ -242,7 +242,21 @@ export class ScouterComponent implements OnInit {
     this.load_preset();
   }
 
-  
+  check_nan(value:number)
+  {
+    if(isNaN(value))
+    {
+      return '입력 수치 확인';
+    }
+    else
+    {
+      return value;
+    }
+
+
+  }
+
+
 }
 
 const statListDefault: string[] =
