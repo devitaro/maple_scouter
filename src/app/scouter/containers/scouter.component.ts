@@ -36,17 +36,12 @@ export class ScouterComponent implements OnInit {
 
   cur_preset_num:string = '';
  
-
-  worker!: Worker;
-  isLoading = false;
-  progress = 0;
-
   stat_table_front :number[] = [61638, 60038, 7494];
   stat_table_back :number[] = [52862565, 55, 387, 95.5, 99];
   link_table :number[] = [6,6,2,2,2,0];
   equip_table :number[] = [129, 13200, 4400, 150, 440];
   auxiliary_table :number[] = [0,0,0,0,0,0];
-  core_table :number[] = [30,60,60,30,30,30];
+  core_table :number[] = [30,60,60,30,30,30,0,0,0,0,0,0,0];
 
   stat_table_list :string[]=[];
   stat_table : string[] = statListCommon;
