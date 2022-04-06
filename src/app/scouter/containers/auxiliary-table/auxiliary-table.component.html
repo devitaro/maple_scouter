@@ -16,7 +16,7 @@
             </mat-form-field>
         </div>
 
-        <div *ngIf="auxiliary_table_list[0] == 2">
+        <div *ngIf="(auxiliary_table_list[0] == 2)||(auxiliary_table_list[0] == 4)">
             <mat-form-field class="w-120">      
                 <mat-label> 재사용 수치 (농장 포함) </mat-label>
                 <mat-select [(ngModel)]="auxiliary_table[1]">
@@ -48,11 +48,11 @@
                   </mat-select>
             </mat-form-field>
         </div>
-        <div *ngIf="auxiliary_table_list[0] == 3">
+        <div *ngIf="(auxiliary_table_list[0] == 3)||(auxiliary_table_list[0] == 4)">
             <mat-form-field class="w-120">          
                 <mat-label> 어빌리티 </mat-label>
-                <mat-select [(ngModel)]="auxiliary_table[1]">
-                    <mat-option [value]="3">패시브1렙</mat-option>
+                <mat-select [(ngModel)]="auxiliary_table[5]">
+                    <mat-option [value]="1">패시브1렙</mat-option>
                     <mat-option [value]="0">해당 없음</mat-option>
                   </mat-select>
             </mat-form-field>

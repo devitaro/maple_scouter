@@ -191,6 +191,12 @@ export function coolReduce_final_calc(job_name:jobNames, cool_reduce:number):num
     
     var assumed_efficiency = spline_data[0] + cool_reduce * spline_data[1] +  cool_reduce * cool_reduce * spline_data[2] + cool_reduce *cool_reduce *cool_reduce *spline_data[3]; 
 
+    if(cool_reduce>5.5)
+    {
+        assumed_efficiency = (jobCReff[job_name][2]-jobCReff[job_name][1]) * 0.6 * (cool_reduce-5) + jobCReff[job_name][2];
+    }
+
+
     return assumed_efficiency * 100;
 
 }
