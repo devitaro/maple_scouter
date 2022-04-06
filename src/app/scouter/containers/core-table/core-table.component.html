@@ -1,1 +1,20 @@
-<p>core-table works!</p>
+<mat-card>
+    <mat-card-subtitle>코어 강화 정보 입력</mat-card-subtitle>
+    <mat-card-content>
+        <div *ngFor="let list of core_skill_name; let i = index">
+            <mat-form-field class = "w-192">          
+                <mat-label> {{list}} </mat-label>
+                <input
+                  type="number"
+                  min = "0"
+                  max = "{{core_data[list][1]}}"
+                  matInput
+                  [(ngModel)]="core_table[i]"
+                  appSelectOnFocus
+                />
+            </mat-form-field>
+        </div>
+
+            
+    </mat-card-content>
+</mat-card>

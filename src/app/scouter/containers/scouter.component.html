@@ -1,7 +1,7 @@
 <div class="container">
   <div class="flex-center">
     <h1 class="mat-h1">
-      환산 주스탯 계산 (Ver 220405, KMS 1.2.362)
+      환산 주스탯 계산 (Ver 220407, KMS 1.2.362)
     </h1>
   </div>
   <div class="layout">
@@ -54,6 +54,8 @@
               <mat-label> 레벨 </mat-label>
               <input
                 type="number"
+                min = "0"
+                min = "300"
                 matInput
                 [(ngModel)]="basicData[1]"
                 (ngModelChange)="initializeJobValues()"
@@ -108,7 +110,12 @@
       [link_table]="link_table"
     >  
     </app-link-table>
-    
+     <app-core-table
+      [core_data]="core_data"
+      [core_skill_name]="core_skill_name"
+      [core_table]="core_table"
+    >
+    </app-core-table>
   </div>
   <div>
     
@@ -129,7 +136,7 @@
         </div>
         
         <div>
-          <h3>환산 주스탯 값 (ver 220405)</h3>
+          <h3>환산 주스탯 값 (ver 220407)</h3>
           <h1 class="mat-h1">
             {{actual_stat}}
           </h1>  

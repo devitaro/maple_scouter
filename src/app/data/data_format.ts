@@ -31,6 +31,7 @@ import {equipAuxiliary,
         equipSubweap_case2,
         equipUnionReserved,
         gradeNames } from "./equip_data";
+import { coreData, skillName } from "./job_core";
 import {jobNames,
         jobPassive_base,
         jobSubweapBase,
@@ -556,10 +557,12 @@ export class UserStatdata
     auxiliary_data:number[];
     link_dmg:number;
 
+    core_efficiency:number = 1;
+
 
     
 
-    constructor(jobData:jobData, baseData:number[], statData_front:number[], statData_back:number[], equipData:number[], auxiliaryData:number[],linkData:number[],coreData:number[])
+    constructor(jobData:jobData, baseData:number[], statData_front:number[], statData_back:number[], equipData:number[], auxiliaryData:number[],linkData:number[],coreTable:number[])
     {
         this.jobName = jobData.jobName_;
         this.jobData_ = jobData;
@@ -569,6 +572,7 @@ export class UserStatdata
         this.level = baseData[1];
         this.final_dmg = baseData[2];
 
+        
         //스탯 계산
 
         this.stat_w_hero = 0;
@@ -649,7 +653,19 @@ export class UserStatdata
 
         this.statData_ = new statData([this.stat_pure, this.stat_rate, this.stat_abs, this.sub_stat,0,0,this.att_mag,this.att_mag_rate,this.dmg+this.link_dmg,this.boss_dmg,this.final_dmg,this.ign_dmg,100,this.cri_dmg]);
 
+        //코어 데이터 보정
+        var cur_efficiency = 1;
+
+        let core_data = coreData[this.jobName];
+        let core_skill_name = skillName[this.jobName];
+
+        for(var ii = 0; ii<core_skill_name.length ; ii++)
+        {
+            cur_efficiency -= core_data[core_skill_name[ii]][0] *(12 / 22) * Math.max(1 - coreTable[ii] / core_data[core_skill_name[ii]][1],0);
         
+        }
+
+        this.core_efficiency = cur_efficiency;
 
         
         //직업 특색에 따른 종댐 보정 (aux 4)
@@ -708,7 +724,6 @@ export class UserStatdata
             this.statData_.final_dmg = addFinal(this.statData_.final_dmg,recycle_final_calc(this.auxiliary_data[1]));
         }
 
-        
 
 
 
@@ -734,7 +749,7 @@ export class UserStatdata
 
     calc100dmg(monster_gaurd_rate:number):number
     {
-        return this.jobData_.calc100dmg(this.doping_applied,this.level,0,monster_gaurd_rate);
+        return this.jobData_.calc100dmg(this.doping_applied,this.level,0,monster_gaurd_rate) * this.core_efficiency;
     }
 
 }
