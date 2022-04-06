@@ -1,6 +1,4 @@
-import { NumberSymbol } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
-import { NumberValueAccessor } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Title } from '@angular/platform-browser';
@@ -25,7 +23,7 @@ export class ScouterComponent implements OnInit {
   template_grades = templategrades;
 
   jobName:jobNames = '나이트로드';
-  basicData:number[] = [0,250,0];//서버, 레벨, 최종댐순
+  basicData:number[] = [0,250,25,0];//서버, 레벨, 최종댐순
   jobdata:jobData = new jobData(this.jobName);
   monster_guard:number = 300;
 
@@ -35,7 +33,7 @@ export class ScouterComponent implements OnInit {
 
   userStatData_:UserStatdata;
 
-  
+  cur_preset_num:string = '';
  
 
   worker!: Worker;
@@ -55,6 +53,8 @@ export class ScouterComponent implements OnInit {
   auxiliary_table_list : number[]  = [];
 
   reboot_final_dmg : number = 0;
+  ruin_final_dmg : number = 0;
+  actual_final_dmg : number = 0;
 
   spline_data:number[] = [];
 
@@ -68,29 +68,28 @@ export class ScouterComponent implements OnInit {
       'MapleScouter - 환산 스탯 계산'
     );
 
-    this.initializeJobValues();
+    this.load_preset_0();
+
+    
+
     this.userStatData_ = new UserStatdata(this.jobdata, this.basicData, this.stat_table_front, this.stat_table_back, this.equip_table, this.auxiliary_table, this.link_table);
+    
+
 
   }
 
 
   ngOnInit(): void {
-    if (typeof Worker !== 'undefined') {
-      this.worker = new Worker(
-        new URL('../score.worker', import.meta.url)
-      );
-    } else {
-      this.snackbar.open(
-        'Web Worker가 지원되지 않는 브라우저입니다. 최신 브라우저를 사용해주세요.',
-        '닫기'
-      );
-    }
+
+    this.load_preset_0();
     
+   
   }
 
   initializeJobValues()
   {
     this.jobdata = new jobData(this.jobName);
+    
 
     if(this.jobdata.jobStatType_== 3)
     {
@@ -116,22 +115,24 @@ export class ScouterComponent implements OnInit {
      //어빌, 쿨, 벞지, 크리인
     this.auxiliary_table_list = [this.jobdata.jobability_, this.jobdata.coolReduce_,this.jobdata.buffFinal_,this.jobdata.criRein_];
 
-    for (var ii = 0; ii<templategrades.length; ii++)
-    {
-      this.jobTemplateData[ii] = new TemplateData(templategrades[ii],this.jobdata,this.monster_guard);
-      this.jobMainstatarr[ii]=gradeMainStat[templategrades[ii]];
-      this.job100dmgarr[ii]=this.jobTemplateData[ii].calc100dmg();   
-    }
-
     //최종댐 계산
-
     this.calculate_additive_final_dmg();
     console.log(this.jobMainstatarr);
     console.log(this.job100dmgarr);
 
+    for (var ii = 0; ii<templategrades.length; ii++)
+    {
+      this.jobTemplateData[ii] = new TemplateData(templategrades[ii],this.jobdata,this.monster_guard, this.actual_final_dmg);
+      this.jobMainstatarr[ii]=gradeMainStat[templategrades[ii]];
+      this.job100dmgarr[ii]=this.jobTemplateData[ii].calc100dmg();
+    }
+
+    
+
     //추세선생성
 
     this.spline_data = polynomial_regression(this.jobMainstatarr,this.job100dmgarr,3);
+
 
   }
 
@@ -152,10 +153,17 @@ export class ScouterComponent implements OnInit {
     {
       this.reboot_final_dmg = 0;
     }
+    if((this.basicData[3] == 1) && ((this.jobName == '데몬어벤져') || (this.jobName == '데몬슬레이어')))
+    {
+      this.ruin_final_dmg = 10;
+    }
+    else
+    {
+      this.ruin_final_dmg = 0;
+    }
 
-    this.basicData[2] = Math.round(((this.jobdata.statData_.final_dmg * 0.01 + 1) * (this.reboot_final_dmg * 0.01 + 1) * 100 - 100)*100)/100 ;
-     
-
+    this.basicData[2] = Math.round(((this.jobdata.statData_.final_dmg * 0.01 + 1) * (this.reboot_final_dmg * 0.01 + 1)* (this.ruin_final_dmg * 0.01 + 1) * 100 - 100)*100)/100 ;
+    this.actual_final_dmg = Math.round(((this.jobdata.statData_.final_dmg * 0.01 + 1) * (this.ruin_final_dmg * 0.01 + 1) * 100 - 100)*100)/100 ;
   }
 
   calculate_user_stat()
@@ -165,6 +173,66 @@ export class ScouterComponent implements OnInit {
     
     this.actual_stat = Math.floor(CubicSolver(this.spline_data,this.userStatData_.calc100dmg(this.monster_guard)));
 
+    console.log(this.userStatData_.calc100dmg(this.monster_guard))
+
+  }
+
+  save()
+  {
+    localStorage.setItem('user_data'+this.cur_preset_num, JSON.stringify({
+      job_name: this.jobName,
+      basic_data: this.basicData,
+      stat_table_front : this.stat_table_front,
+      stat_table_back : this.stat_table_back,
+      link_table : this.link_table,
+      equip_table : this.equip_table,
+      auxiliary_table : this.auxiliary_table,
+      core_table : this.core_table,
+    }));
+
+    this.snackbar.open(
+      '스펙 저장 완료',
+      '닫기'
+    );
+  }
+
+  load_preset()
+  {
+    const saved_user_data = JSON.parse(localStorage.getItem('user_data'+this.cur_preset_num)!);
+    if(saved_user_data)
+    {
+      this.jobName = saved_user_data.job_name;
+      this.basicData = saved_user_data.basic_data;
+      this.stat_table_front = saved_user_data.stat_table_front;
+      this.stat_table_back = saved_user_data.stat_table_back;
+      this.link_table = saved_user_data.link_table;
+      this.equip_table = saved_user_data.equip_table;
+      this.auxiliary_table = saved_user_data.auxiliary_table;
+      this.core_table = saved_user_data.core_table;
+
+      //initialize
+      this.initializeJobValues();
+      this.userStatData_ = new UserStatdata(this.jobdata, this.basicData, this.stat_table_front, this.stat_table_back, this.equip_table, this.auxiliary_table, this.link_table);
+      this.actual_stat = Math.floor(CubicSolver(this.spline_data,this.userStatData_.calc100dmg(this.monster_guard)));
+
+    }
+    else
+    {
+      this.initializeJobValues();
+    }
+  }
+
+  load_preset_0()
+  {
+    this.cur_preset_num = '';
+    this.load_preset();
+    
+  }
+
+  load_preset_1()
+  {
+    this.cur_preset_num = '_1';
+    this.load_preset();
   }
 
   

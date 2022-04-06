@@ -1,11 +1,31 @@
-import { optimizeHyperUnion } from "../functions/optimizer";
+import { addFinal,
+        coolReduce_final_calc,
+        equilibrium_final_calc,
+        infinity_final_calc,
+        passive_final_calc,
+        recycle_final_calc,
+        template_infinity_final_calc } from "../functions/final_comp";
+import { optimizeHyperUnion,
+        optimizeHyperUnion_demon,
+        optimizeHyperUnion_xenon } from "../functions/optimizer";
 import {equipAuxiliary,
+        equipCool,
         equipCoolComp,
+        equipCoolComp_demon,
+        equipCoolComp_xenon,
         equipCoreAdd,
+        equipCoreAdd_demon,
+        equipCoreAdd_xenon,
         equipFarm,
+        equipFarm_demon,
+        equipFarm_xenon,
         equipjobWeapattComp,
         equipLevel,
         equipLevelSmooth,
+        equipLevel_demon,
+        equipLevel_xenon,
+        equipLumiComp,
+        equipRecycleComp,
         equipSubStat,
         equipSubweap_case1,
         equipSubweap_case2,
@@ -31,6 +51,7 @@ import {jobNames,
         jobCReff,
         jobProperty,
         jobAddIGR,
+        jobDopingData,
 } from "./job_data";
 
 
@@ -117,7 +138,7 @@ export class statData
         this.att_mag_rate += to_add.att_mag_rate;
         this.dmg += to_add.dmg;
         this.boss_dmg += to_add.boss_dmg;
-        this.final_dmg = (this.final_dmg * 0.01 + 1) * (to_add.final_dmg * 0.01 + 1) * 100 -100;
+        this.final_dmg = addFinal(this.final_dmg, to_add.final_dmg);
         this.ign_dmg = (1 - (1 - this.ign_dmg * 0.01) * (1 - to_add.ign_dmg * 0.01)) * 100;
         this.cri_rate += to_add.cri_rate;
         this.cri_dmg += to_add.cri_dmg;
@@ -186,7 +207,7 @@ export class jobData
     linkAbility_sub:statData;
     farm_:statData;
     union_:statData;
-    doping_:statData= new statData([30,0,0,0,0,0,180,4,40,50,0,0,0,30]);//데이터 관리 고민 해야함;
+    doping_:statData
     coreStat_:statData;
 
     statData_:statData;
@@ -211,14 +232,22 @@ export class jobData
         this.passiveData_ = new statData(jobPassive_base[jobName]);
         this.passiveData_.ign_dmg = jobAddIGR[jobName][0];
         this.passiveData_abl1lv = new statData(jobPassive_Lv1[jobName]);
+        this.passiveData_abl1lv.ign_dmg = jobAddIGR[jobName][0];
+
         this.subweap_ = new statData(jobSubweapBase[jobName]);
         this.linkAbility_main = new statData(jobLinkAbilities_main[jobName]);
         this.linkAbility_sub  = new statData(jobLinkAbilities_semi[jobName]);
         this.farm_ = new statData(jobFarm[jobName]);
-        this.union_ = new statData(jobUnion[jobName]);
+        this.union_ = new statData(jobUnion[jobName]);        
         this.coreStat_ = new statData(jobCoreStats[jobName]);
 
+        this.doping_ = new statData(jobDopingData[jobName]);
+
         this.statData_ = this.passiveData_ ;
+        if(this.jobability_ == 3)
+        {
+            this.statData_ = this.passiveData_abl1lv;
+        }
         this.statData_.add_stat(this.subweap_);
         this.statData_.add_stat(this.linkAbility_main);
         this.statData_.add_stat(this.farm_);
@@ -233,11 +262,15 @@ export class jobData
     {
         if(this.jobName_ == '팔라딘')
         {
-            return Math.floor((18+5*level)*0.16)
+            return Math.floor((18+5*level)*0.16);
+        }
+        else if(this.jobName_ == '제논')
+        {
+            return Math.floor((26+5*level)*0.15);
         }
         else
         {
-            return Math.floor((18+5*level)*0.15)
+            return Math.floor((18+5*level)*0.15);
         }
     }
 
@@ -260,6 +293,15 @@ export class jobData
         var ign_coeff = Math.max(0, 1 - monster_guard / 100 * (1-statinfo.ign_dmg / 100));
         var cri_coeff = Math.min(statinfo.cri_rate,100)/100 * (0.35 + statinfo.cri_dmg/100) + 1;
        
+        console.log("coeffs")
+        console.log(prof_coeff)
+        console.log(weap_coeff)
+        console.log(stat_coeff)
+        console.log(att_coeff)
+        console.log(dmg_coeff)
+        console.log(final_coeff)
+        console.log(ign_coeff)
+        console.log(cri_coeff)
 
         return Math.floor(prof_coeff * weap_coeff * stat_coeff * att_coeff * dmg_coeff * final_coeff * ign_coeff * cri_coeff);
     }
@@ -290,7 +332,7 @@ export class TemplateData
 
 
 
-    constructor(gradeName:gradeNames, jobData:jobData, monGaurd:number)
+    constructor(gradeName:gradeNames, jobData:jobData, monGaurd:number, final_dmg:number)
     {
         this.monster_gaurd_rate = monGaurd;
         this.gradeName_ = gradeName;
@@ -301,15 +343,36 @@ export class TemplateData
         this.hyper_point = equipAuxiliary[gradeName][1];
         this.union_blocks = equipAuxiliary[gradeName][2];
         this.reserved_blocks = equipUnionReserved[gradeName][jobData.buffFinal_];
+        
+        this.jobData_.statData_.final_dmg = final_dmg;
 
 
         //장비 수준 확정
         this.gradeEquipStat_ = new statData(equipLevel[gradeName]);
         this.gradeEquipStat_.add_stat(new statData(equipCoreAdd[gradeName]));
+        //무기공 보정
+        this.gradeEquipStat_.att_mag -= jobMainWeapAtt["히어로"][equipjobWeapattComp[gradeName]];
+        this.gradeEquipStat_.att_mag += jobMainWeapAtt[jobData.jobName_][equipjobWeapattComp[gradeName]];
+        //특이 직업은 별도로 빼버림
+        if(this.jobName_ == '제논')
+        {
+            this.gradeEquipStat_ = new statData(equipLevel_xenon[gradeName]);
+            this.gradeEquipStat_.add_stat(new statData(equipCoreAdd_xenon[gradeName]));
+        }
+        else if(this.jobName_ == '데몬어벤져')
+        {
+            this.gradeEquipStat_ = new statData(equipLevel_demon[gradeName]);
+            this.gradeEquipStat_.add_stat(new statData(equipCoreAdd_demon[gradeName]));
+        }
         this.gradeEquipStat_.add_stat(this.jobData_.doping_);
+        
         //메용, 시그 보정
-
-        this.gradeEquipStat_.main_stat_pure += this.jobData_.ap_by_hero(this.level_);
+        //아 씨발 진짜 데벤져 병신같은 직업 좆같아서 못해먹겠네
+        if(this.jobName_ != '데몬어벤져')
+        {
+            this.gradeEquipStat_.main_stat_pure += this.jobData_.ap_by_hero(this.level_);
+        }
+        
 
         
         if((jobData.jobName_ == '나이트워커')
@@ -322,9 +385,7 @@ export class TemplateData
         }
 
 
-        //무기공 보정
-        this.gradeEquipStat_.att_mag -= jobMainWeapAtt["히어로"][equipjobWeapattComp[gradeName]];
-        this.gradeEquipStat_.att_mag += jobMainWeapAtt[jobData.jobName_][equipjobWeapattComp[gradeName]];
+        
         //2부스탯, 보조 보정
         if(jobData.jobStatType_ == 1)
         {
@@ -342,7 +403,20 @@ export class TemplateData
         if(equipLevelSmooth[gradeName] == 1)
         {
             this.templatejobStat_.sub_stat(jobData.farm_);
-            this.templatejobStat_.add_stat(new statData(equipFarm[gradeName]));
+
+            if(this.jobName_ == '제논')
+            {
+                this.templatejobStat_.add_stat(new statData(equipFarm_xenon[gradeName]));    
+            }
+            else if(this.jobName_ == '데몬어벤져')
+            {
+                this.templatejobStat_.add_stat(new statData(equipFarm_demon[gradeName]));    
+            }
+            else
+            {
+                this.templatejobStat_.add_stat(new statData(equipFarm[gradeName]));
+            }
+            
             
             if(gradeName=='버닝메린이')
             {
@@ -362,15 +436,36 @@ export class TemplateData
         //쿨감 보정
         if(jobData.coolReduce_ == 1)
         {
-            this.gradeEquipStat_.main_stat_rate -= equipCoolComp[gradeName][jobCReff[jobData.jobName_][3]];
+            if(this.jobName_ == '제논')
+            {
+                this.gradeEquipStat_.main_stat_rate -= equipCoolComp_xenon[gradeName][jobCReff[jobData.jobName_][3]];
+            }
+            else if(this.jobName_ == '데몬어벤져')
+            {
+                this.gradeEquipStat_.main_stat_rate -= equipCoolComp_demon[gradeName][jobCReff[jobData.jobName_][3]];
+            }
+            else
+            {
+                this.gradeEquipStat_.main_stat_rate -= equipCoolComp[gradeName][jobCReff[jobData.jobName_][3]];
+            }
+           
         }
         
 
         this.totalStat_ = this.templatejobStat_;
         this.totalStat_.add_stat(this.gradeEquipStat_);
         this.optimizeResult_ = optimizeHyperUnion(this.totalStat_,this.hyper_point,this.union_blocks,this.reserved_blocks,jobData.criRein_,monGaurd);
+        if(this.jobName_ == '제논')
+        {
+            this.optimizeResult_ = optimizeHyperUnion_xenon(this.totalStat_,this.hyper_point,this.union_blocks,this.reserved_blocks,jobData.criRein_,monGaurd);
+        }
+        if(this.jobName_ == '데몬어벤져')
+        {
+            this.optimizeResult_ = optimizeHyperUnion_demon(this.totalStat_,this.hyper_point,this.union_blocks,this.reserved_blocks,jobData.criRein_,monGaurd,this.level_);
+        }
         this.totalStat_.add_stat(this.optimizeResult_);
 
+        //직업 특색에 따른 종댐 보정
         //초과 크리 보정
         if(this.totalStat_.cri_rate > 100)
         {
@@ -378,7 +473,32 @@ export class TemplateData
             this.totalStat_.cri_rate = 100;
             this.totalStat_.att_mag += over_rate*2.35;
         }
-        //직업 특색에 따른 종댐 보정
+        //벞지 보정
+        if(this.jobData_.buffFinal_ == 2)
+        {
+            this.totalStat_.final_dmg = addFinal(this.totalStat_.final_dmg,equilibrium_final_calc(equipLumiComp[this.gradeName_]));
+           
+        }
+        else if(this.jobData_.buffFinal_ == 1)
+        {
+            this.totalStat_.final_dmg = addFinal(this.totalStat_.final_dmg,template_infinity_final_calc(this.gradeName_));
+        }
+        //쿨감 보정
+        if(this.jobData_.coolReduce_ == 1)
+        {
+            this.totalStat_.final_dmg = addFinal(this.totalStat_.final_dmg,coolReduce_final_calc(this.jobName_,equipCool[this.gradeName_][jobCReff[this.jobName_][3]]))
+            
+        }
+        //패시브, 재사용 보정
+        if(this.jobData_.jobability_ == 3)
+        {
+            this.totalStat_.final_dmg = addFinal(this.totalStat_.final_dmg,passive_final_calc(this.jobName_));
+        } 
+        else if(this.jobData_.jobability_ == 2)
+        {
+            this.totalStat_.final_dmg = addFinal(this.totalStat_.final_dmg,recycle_final_calc(equipRecycleComp[this.gradeName_]));
+        }
+
 
     }
 
@@ -442,12 +562,12 @@ export class UserStatdata
         this.stat_wo_hero = 0;
         this.sub_stat = 0;
 
-        if(jobData.jobStatType_== 2) //제논
+        if(this.jobData_.jobStatType_== 2) //제논
         {
             this.stat_w_hero = statData_front[0]+statData_front[1]+statData_front[2];
             this.stat_wo_hero = statData_front[3]+statData_front[4]+statData_front[5];
         }
-        else if(jobData.jobStatType_== 1) //이중 부스탯
+        else if(this.jobData_.jobStatType_== 1) //이중 부스탯
         {
             this.stat_w_hero = statData_front[0];
             this.stat_wo_hero = statData_front[1];
@@ -481,33 +601,107 @@ export class UserStatdata
         //calculate stat rate
         var stat_difference = this.stat_w_hero - this.stat_wo_hero;
         var pure_hero_ap = jobData.ap_by_hero(this.level);
-
-        this.stat_rate = Math.round((stat_difference/pure_hero_ap-1)*100);
-        
+        this.stat_rate = Math.round((stat_difference/pure_hero_ap-1)*100);        
         //calculate pure stat
-
         var stat_w_per = this.stat_wo_hero - this.stat_abs;
-
         this.stat_pure = Math.ceil(stat_w_per/(1+this.stat_rate/100));
+       
+        //데벤져 진짜 아아아아아아아아아아아아ㅏㅇ
+        var actual_main_stat = this.stat_w_hero;
+        if(this.jobName == '데몬어벤져')
+        {
+            var temp_hp = stat_difference * 2.5;
+            var hp_w_per = this.stat_w_hero - this.stat_abs;
+            this.stat_rate = Math.round((hp_w_per/temp_hp-1)*100);
+            this.stat_pure = Math.ceil(hp_w_per/(1+this.stat_rate/100));
+            var level_hp = 545 + this.level * 90;
+            var item_hp = this.stat_w_hero - level_hp;
+            actual_main_stat = level_hp / 14 + item_hp / 17.5;          
+        }
+         //calculate att_mag
+         var job_weap_coeff = jobData.jobProperty_[1];
 
-        //calculate att_mag
-
-        var job_weap_coeff = jobData.jobProperty_[1];
-
-        this.att_mag = Math.ceil(this.stat_atk/((this.sub_stat+4*this.stat_w_hero)*0.01*job_weap_coeff*(1+this.dmg*0.01)*(1+this.final_dmg*0.01)*(1+this.att_mag_rate*0.01)))
-
+        this.att_mag = Math.ceil(this.stat_atk/((this.sub_stat+4*actual_main_stat)*0.01*job_weap_coeff*(1+this.dmg*0.01)*(1+this.final_dmg*0.01)*(1+this.att_mag_rate*0.01)))
+        
+        console.log("췡")
+        console.log(this.stat_pure)
+        console.log(this.stat_rate)
+        console.log(this.stat_abs)
+        console.log(this.sub_stat)
+        console.log(this.stat_atk)
+        console.log(this.dmg)
+        console.log(this.att_mag_rate)
+        console.log(this.final_dmg)
+        console.log(this.att_mag)
 
         this.statData_ = new statData([this.stat_pure, this.stat_rate, this.stat_abs, this.sub_stat,0,0,this.att_mag,this.att_mag_rate,this.dmg+this.link_dmg,this.boss_dmg,this.final_dmg,this.ign_dmg,100,this.cri_dmg]);
+
+        
+
+        
+        //직업 특색에 따른 종댐 보정 (aux 4)
+        if(this.jobData_.criRein_ == 1)
+        {
+            var over_rate = this.auxiliary_data[4] - 100;
+            if(over_rate < 0)
+            {
+                over_rate = 0;
+            }
+            this.statData_.att_mag += over_rate*2.35;
+        }
+        //벞지 보정 (aux 3)
+        if(this.jobData_.buffFinal_ == 2)
+        {
+            this.statData_.final_dmg = addFinal(this.statData_.final_dmg,equilibrium_final_calc(this.auxiliary_data[3]));
+        }
+        else if(this.jobData_.buffFinal_ == 1)
+        {
+            this.statData_.final_dmg = addFinal(this.statData_.final_dmg,infinity_final_calc(this.auxiliary_data[2], this.auxiliary_data[3], 30, 0.05));
+        }
+        //쿨감 보정 (aux 2)
+        if(this.jobData_.coolReduce_ == 1)
+        {
+            this.statData_.final_dmg = addFinal(this.statData_.final_dmg,coolReduce_final_calc(this.jobName,this.auxiliary_data[2]))
+        }
+        //패시브, 재사용 보정 (aux 1)
+        if(this.jobData_.jobability_ == 3)
+        {
+            if(this.auxiliary_data[1] == 3)
+            {
+                this.statData_.final_dmg = addFinal(this.statData_.final_dmg,passive_final_calc(this.jobName));
+            }
+            else
+            {
+                this.jobData_.jobProperty_[0] = jobPassive_base[this.jobName][14];
+                this.jobData_.jobProperty_[1] = jobPassive_base[this.jobName][15];
+            }
+            
+        } 
+        else if(this.jobData_.jobability_ == 2)
+        {
+            this.statData_.final_dmg = addFinal(this.statData_.final_dmg,recycle_final_calc(this.auxiliary_data[1]));
+        }
+        
+
+
+
 
         this.doping_applied = this.statData_.deepCopy();
         this.doping_applied.add_stat(jobData.doping_);
 
         //추가 조정, 메소드 관리 필요
-
-        this.doping_applied.main_stat_pure += this.jobData_.ap_by_hero(this.level);
+        
+        if(this.jobName == '데몬어벤져')
+        {
+            this.doping_applied.main_stat_rate -= 40; //쓸뻥이 이미 고려되어있기 때문에 뺸다
+        }
+        else
+        {
+            this.doping_applied.main_stat_pure += this.jobData_.ap_by_hero(this.level);    
+        }
         this.doping_applied.ign_dmg = (1 - (1 -this.doping_applied.ign_dmg * 0.01) * (1 - jobAddIGR[this.jobName][1] * 0.01) * (1 - auxiliaryData[0] * 2 * 0.01)) * 100;
         
-        
+
     }
 
     calc100dmg(monster_gaurd_rate:number):number

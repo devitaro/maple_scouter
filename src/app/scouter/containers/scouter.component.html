@@ -1,7 +1,7 @@
 <div class="container">
   <div class="flex-center">
     <h1 class="mat-h1">
-      환산 주스탯 계산 (Beta, Ver 220423)
+      환산 주스탯 계산 (Ver 220405, KMS 1.2.362)
     </h1>
   </div>
   <div class="layout">
@@ -13,18 +13,27 @@
             <mat-label> 직업 선택 </mat-label>
             <mat-select 
             [(value)]="jobName"
-            (selectionChange)="initializeJobValues()"
+            (selectionChange)=" initializeJobValues()"
             appSelectOnFocus>
               <mat-option *ngFor="let job of job_names" [value]="job">{{job}}</mat-option>
             </mat-select>
           </mat-form-field>
+          <mat-form-field *ngIf="(jobName == '데몬어벤져') || (jobName == '데몬슬레이어')" class="w-120">          
+            <mat-label> 루포실 유무 </mat-label>
+            <mat-select 
+            [(ngModel)]="basicData[3]"
+            (selectionChange)="initializeJobValues()">
+                <mat-option [value]="1">루포실 사용</mat-option>
+                <mat-option [value]="0">루포실 미사용</mat-option>
+              </mat-select>
+        </mat-form-field>
         </div>
         <div>
           <mat-form-field>          
               <mat-label> 서버 </mat-label>
               <mat-select
               [(ngModel)]="basicData[0]"
-              (selectionChange)="calculate_additive_final_dmg()">
+              (selectionChange)="initializeJobValues()">
                   <mat-option [value]="0">본섭</mat-option>
                   <mat-option [value]="1">리부트</mat-option>
                 </mat-select>
@@ -37,7 +46,7 @@
                 type="number"
                 matInput
                 [(ngModel)]="basicData[1]"
-                (ngModelChange)="calculate_additive_final_dmg()"
+                (ngModelChange)="initializeJobValues()"
                 appSelectOnFocus
               />
           </mat-form-field>
@@ -53,9 +62,9 @@
             {{jobdata.jobBuffCond_}}
           </h4>
           <mat-label> 스탯창 최종 데미지 </mat-label>
-          <h4 class="mat-h4">
+          <h1 class="mat-h1">
             {{basicData[2]}}
-          </h4>
+          </h1>
         </div>
       </mat-card-content>
     </mat-card>
@@ -82,12 +91,25 @@
     </app-link-table>
   </div>
   <div>
-    <mat-card class="w-192">
-      <mat-card-subtitle>환산 주스탯 정보</mat-card-subtitle>
+    
+    <mat-card class="w-240">
+      <mat-card-subtitle> 최종 계산 및 스펙 저장 </mat-card-subtitle>
       <mat-card-content>
-        <button class="heading-button" (click)="calculate_user_stat()" mat-stroked-button>환산 주스탯 계산</button>
         <div>
-          <mat-label> 환산 주스탯 </mat-label>
+          <button mat-raised-button color="accent" (click)="save()">스펙 저장</button>
+        </div>
+        <div>
+          <h3> </h3>
+        </div>
+        <div>
+          <button mat-raised-button color="primary" (click)="calculate_user_stat()">환산 주스탯 계산</button>
+        </div>
+        <div>
+          <h3> </h3>
+        </div>
+        
+        <div>
+          <h3>환산 주스탯 값 (ver 220405)</h3>
           <h1 class="mat-h1">
             {{actual_stat}}
           </h1>  
