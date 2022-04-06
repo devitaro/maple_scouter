@@ -9,6 +9,7 @@ import { TemplateData, jobData, UserStatdata } from 'src/app/data/data_format';
 import { equipLevel, gradeMainStat, grades, templategrades } from 'src/app/data/equip_data';
 import { polynomial_regression } from 'src/app/functions/poly_reg';
 import { CubicSolver } from 'src/app/functions/eqsolver';
+import { coreData } from 'src/app/data/job_core';
 
 @Component({
   selector: 'app-container',
@@ -23,7 +24,7 @@ export class ScouterComponent implements OnInit {
   template_grades = templategrades;
 
   jobName:jobNames = '나이트로드';
-  basicData:number[] = [0,250,25,0];//서버, 레벨, 최종댐순
+  basicData:number[] = [0,250,25,0];//서버, 레벨, 최종댐, 루포쉴순
   jobdata:jobData = new jobData(this.jobName);
   monster_guard:number = 300;
 
@@ -40,11 +41,11 @@ export class ScouterComponent implements OnInit {
   isLoading = false;
   progress = 0;
 
-  stat_table_front :number[] = [];
-  stat_table_back :number[] = [];
+  stat_table_front :number[] = [61638, 60038, 7494];
+  stat_table_back :number[] = [52862565, 55, 387, 95.5, 99];
   link_table :number[] = [6,6,2,2,2,0];
-  equip_table :number[] = [];
-  auxiliary_table :number[] = [0,0,0,0,0];
+  equip_table :number[] = [129, 13200, 4400, 150, 440];
+  auxiliary_table :number[] = [0,0,0,0,0,0];
   core_table :number[] = [];
 
   stat_table_list :string[]=[];
@@ -52,6 +53,10 @@ export class ScouterComponent implements OnInit {
   equip_table_list :string[]=[];
   auxiliary_table_list : number[]  = [];
 
+
+  core_data : Record<jobNames,number[]> = coreData['나이트로드'];
+
+  
   reboot_final_dmg : number = 0;
   ruin_final_dmg : number = 0;
   actual_final_dmg : number = 0;
@@ -72,7 +77,7 @@ export class ScouterComponent implements OnInit {
 
     
 
-    this.userStatData_ = new UserStatdata(this.jobdata, this.basicData, this.stat_table_front, this.stat_table_back, this.equip_table, this.auxiliary_table, this.link_table);
+    this.userStatData_ = new UserStatdata(this.jobdata, this.basicData, this.stat_table_front, this.stat_table_back, this.equip_table, this.auxiliary_table, this.link_table, this.core_table);
     
 
 
@@ -111,6 +116,11 @@ export class ScouterComponent implements OnInit {
       this.stat_table_list = statListDefault;
       this.equip_table_list = equipListDefault;
     }
+    //코어 설정
+    this.core_data = coreData[this.jobName];
+
+    
+
 
      //어빌, 쿨, 벞지, 크리인
     this.auxiliary_table_list = [this.jobdata.jobability_, this.jobdata.coolReduce_,this.jobdata.buffFinal_,this.jobdata.criRein_];
@@ -168,7 +178,7 @@ export class ScouterComponent implements OnInit {
 
   calculate_user_stat()
   {
-    this.userStatData_ = new UserStatdata(this.jobdata, this.basicData, this.stat_table_front, this.stat_table_back, this.equip_table, this.auxiliary_table, this.link_table);
+    this.userStatData_ = new UserStatdata(this.jobdata, this.basicData, this.stat_table_front, this.stat_table_back, this.equip_table, this.auxiliary_table, this.link_table, this.core_table);
 
     
     this.actual_stat = Math.floor(CubicSolver(this.spline_data,this.userStatData_.calc100dmg(this.monster_guard)));
@@ -212,7 +222,7 @@ export class ScouterComponent implements OnInit {
 
       //initialize
       this.initializeJobValues();
-      this.userStatData_ = new UserStatdata(this.jobdata, this.basicData, this.stat_table_front, this.stat_table_back, this.equip_table, this.auxiliary_table, this.link_table);
+      this.userStatData_ = new UserStatdata(this.jobdata, this.basicData, this.stat_table_front, this.stat_table_back, this.equip_table, this.auxiliary_table, this.link_table, this.core_table);
       this.actual_stat = Math.floor(CubicSolver(this.spline_data,this.userStatData_.calc100dmg(this.monster_guard)));
 
     }

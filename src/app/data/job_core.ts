@@ -1,4 +1,15 @@
+import { jobNames } from "./job_data"
+
 //효율, 최대렙
+
+
+export const skillName: Record<string, string[]> =
+{
+    '나이트로드' : ['스프레드스로우','쿼드러플','마크','스로우 블래스팅','비전서','풍마수리검'],
+
+}
+
+
 
 export const NightLord: Record<string, number[]> =
 {
@@ -9,7 +20,6 @@ export const NightLord: Record<string, number[]> =
     '비전서' : [0.0585, 30],
     '풍마수리검' : [0.0508, 30],
 }
-
 
 export const NightWalker: Record<string, number[]> =
 {
@@ -490,4 +500,58 @@ export const DemonAvenger: Record<string, number[]> =
     '디멘션 소드' : [0.0537, 30],
     '블러드피스트' : [0.0524, 30],
     '인핸스드익시드' : [0.0294, 60],
+}
+
+
+
+
+//하나로 묶음
+
+export const coreData: Record<jobNames, Record<jobNames,number[]>> = 
+{
+    '나이트로드' : NightLord,
+    '나이트워커' : NightWalker,
+    '다크나이트' : DarkKnight,
+    '데몬슬레이어' : DemonSlayer,
+    '듀얼블레이드' : DualBlader,
+    '라라' : Lara,
+    '루미너스' : Luminous,
+    '메르세데스' : Mercedes,
+    '메카닉' : Mechanic,
+    '미하일' : Mikhail,
+    '바이퍼' : Viper,
+    '배틀메이지' : BattleMage,
+    '보우마스터' : Bowmaster,
+    '블래스터' : Blaster,
+    '비숍' : Bishop,
+    '섀도어': Shadower,
+    '소울마스터' : SoulMaster,
+    '스트라이커' : Striker,
+    '신궁' : Marksman,
+    '아델' : Adele,
+    '아란' : Aran,
+    '아크' : Ark,
+    '아크메이지(불,독)' : ArchMageFP,
+    '아크메이지(썬,콜)' : ArchMageTC,
+    '에반' : Evan,
+    '엔젤릭버스터' : AngelicBuster,
+    '와일드헌터' : WildHunter,
+    '윈드브레이커' : WindBreaker,
+    '은월' : Eunwol,
+    '일리움' : Illium,
+    '제로' : Zero,
+    '카데나' : Cadena,
+    '카이저' : Kaiser,
+    '카인' : Kain,
+    '캐논슈터' : CannonMaster,
+    '캡틴' : Captain,
+    '키네시스' : Kinesis,
+    '팔라딘' : Palladin,
+    '패스파인더' : PathFinder,
+    '팬텀' : Phantom,
+    '플레임위자드' : FlameWizard,
+    '호영' : Hoyeong,
+    '히어로' : Hero,
+    '제논' : Xenon,
+    '데몬어벤져' : DemonAvenger,
 }

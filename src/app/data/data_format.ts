@@ -498,6 +498,11 @@ export class TemplateData
         {
             this.totalStat_.final_dmg = addFinal(this.totalStat_.final_dmg,recycle_final_calc(equipRecycleComp[this.gradeName_]));
         }
+        else if(this.jobData_.jobability_ == 4)
+        {
+            this.totalStat_.final_dmg = addFinal(this.totalStat_.final_dmg,passive_final_calc(this.jobName_));
+            this.totalStat_.final_dmg = addFinal(this.totalStat_.final_dmg,recycle_final_calc(equipRecycleComp[this.gradeName_]));
+        }
 
 
     }
@@ -546,7 +551,7 @@ export class UserStatdata
 
     
 
-    constructor(jobData:jobData, baseData:number[], statData_front:number[], statData_back:number[], equipData:number[], auxiliaryData:number[],linkData:number[])
+    constructor(jobData:jobData, baseData:number[], statData_front:number[], statData_back:number[], equipData:number[], auxiliaryData:number[],linkData:number[],coreData:number[])
     {
         this.jobName = jobData.jobName_;
         this.jobData_ = jobData;
@@ -663,10 +668,10 @@ export class UserStatdata
         {
             this.statData_.final_dmg = addFinal(this.statData_.final_dmg,coolReduce_final_calc(this.jobName,this.auxiliary_data[2]))
         }
-        //패시브, 재사용 보정 (aux 1)
+        //재사용 보정 (aux 1), 패시브 1렙 보정 (aux 5)
         if(this.jobData_.jobability_ == 3)
         {
-            if(this.auxiliary_data[1] == 3)
+            if(this.auxiliary_data[5] == 1)
             {
                 this.statData_.final_dmg = addFinal(this.statData_.final_dmg,passive_final_calc(this.jobName));
             }
@@ -681,6 +686,20 @@ export class UserStatdata
         {
             this.statData_.final_dmg = addFinal(this.statData_.final_dmg,recycle_final_calc(this.auxiliary_data[1]));
         }
+        else if(this.jobData_.jobability_ == 4)
+        {
+            if(this.auxiliary_data[5] == 1)
+            {
+                this.statData_.final_dmg = addFinal(this.statData_.final_dmg,passive_final_calc(this.jobName));
+            }
+            else
+            {
+                this.jobData_.jobProperty_[0] = jobPassive_base[this.jobName][14];
+                this.jobData_.jobProperty_[1] = jobPassive_base[this.jobName][15];
+            }
+            this.statData_.final_dmg = addFinal(this.statData_.final_dmg,recycle_final_calc(this.auxiliary_data[1]));
+        }
+
         
 
 
@@ -699,6 +718,7 @@ export class UserStatdata
         {
             this.doping_applied.main_stat_pure += this.jobData_.ap_by_hero(this.level);    
         }
+        //aux0 반영
         this.doping_applied.ign_dmg = (1 - (1 -this.doping_applied.ign_dmg * 0.01) * (1 - jobAddIGR[this.jobName][1] * 0.01) * (1 - auxiliaryData[0] * 2 * 0.01)) * 100;
         
 
