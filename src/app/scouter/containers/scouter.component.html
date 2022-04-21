@@ -43,9 +43,9 @@
           <mat-select
           [(ngModel)]="monster_guard"
           (selectionChange)="initializeJobValues()">
-              <mat-option [value]="50">방어율 50%</mat-option>
-              <mat-option [value]="300">방어율 300%</mat-option>
-              <mat-option [value]="380">방어율 380%</mat-option>
+              <mat-option [value]="50">50% (무릉)</mat-option>
+              <mat-option [value]="300">300% (보스)</mat-option>
+              <mat-option [value]="380">380% (보스)</mat-option>
             </mat-select>
       </mat-form-field>
       </div>
@@ -55,7 +55,7 @@
               <input
                 type="number"
                 min = "0"
-                min = "300"
+                max = "300"
                 matInput
                 [(ngModel)]="basicData[1]"
                 (ngModelChange)="initializeJobValues()"
@@ -138,7 +138,7 @@
         <div>
           <h3>환산 주스탯 값 (ver 220407)</h3>
           <h1 class="mat-h1">
-            {{check_nan(actual_stat)}}
+            {{check_actual_stat()}}
           </h1>  
         </div>
 
