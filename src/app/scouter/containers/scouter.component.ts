@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnChanges, OnInit, SimpleChanges } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Title } from '@angular/platform-browser';
@@ -16,7 +16,7 @@ import { coreData, skillName } from 'src/app/data/job_core';
   templateUrl: './scouter.component.html',
   styleUrls: ['./scouter.component.scss']
 })
-export class ScouterComponent implements OnInit {
+export class ScouterComponent implements OnChanges {
 
   job_names = jobs;
   grade_names = grades;
@@ -24,9 +24,9 @@ export class ScouterComponent implements OnInit {
   template_grades = templategrades;
 
   jobName:jobNames = '나이트로드';
-  basicData:number[] = [0,250,25,0,0];//서버, 레벨, 최종댐, 루포쉴, 소울 순
+  basicData:number[] = [0,275,25,0,0];//서버, 레벨, 최종댐, 루포쉴, 소울 순
   jobdata:jobData = new jobData(this.jobName);
-  monster_guard:number = 300;
+  monster_guard:number = 50;
 
   jobTemplateData:TemplateData[] = [];
   job100dmgarr:number[]=[];
@@ -34,7 +34,8 @@ export class ScouterComponent implements OnInit {
 
   userStatData_:UserStatdata;
 
-  cur_preset_num:string = '';
+  cur_preset_num:number = 1;
+  is_NAN:boolean = false;
  
   stat_table_front :number[] = [61638, 60038, 7494];
   stat_table_back :number[] = [52862565, 55, 387, 95.5, 99];
@@ -69,22 +70,15 @@ export class ScouterComponent implements OnInit {
       'MapleScouter - 환산 스탯 계산'
     );
 
-    this.load_preset_0();
-
-    
-
+    this.load_preset();
     this.userStatData_ = new UserStatdata(this.jobdata, this.basicData, this.stat_table_front, this.stat_table_back, this.equip_table, this.auxiliary_table, this.link_table, this.core_table);
-    
 
 
   }
 
 
-  ngOnInit(): void {
-
-    this.load_preset_0();
+  ngOnChanges(changes: SimpleChanges): void {
     
-   
   }
 
   initializeJobValues()
@@ -186,7 +180,8 @@ export class ScouterComponent implements OnInit {
 
   save()
   {
-    localStorage.setItem('user_data'+this.cur_preset_num, JSON.stringify({
+    localStorage.setItem('user_data'+this.cur_preset_num.toString(), JSON.stringify(
+      {
       job_name: this.jobName,
       basic_data: this.basicData,
       stat_table_front : this.stat_table_front,
@@ -195,17 +190,19 @@ export class ScouterComponent implements OnInit {
       equip_table : this.equip_table,
       auxiliary_table : this.auxiliary_table,
       core_table : this.core_table,
-    }));
+      }
+    ));
 
     this.snackbar.open(
-      '스펙 저장 완료',
+      '프리셋 '+this.cur_preset_num.toString()+'번에 저장 완료',
       '닫기'
     );
   }
 
   load_preset()
   {
-    const saved_user_data = JSON.parse(localStorage.getItem('user_data'+this.cur_preset_num)!);
+    const saved_user_data = JSON.parse(localStorage.getItem('user_data'+this.cur_preset_num.toString())!);
+    console.log(saved_user_data.length)
     if(saved_user_data)
     {
       this.jobName = saved_user_data.job_name;
@@ -217,40 +214,28 @@ export class ScouterComponent implements OnInit {
       this.auxiliary_table = saved_user_data.auxiliary_table;
       this.core_table = saved_user_data.core_table;
 
-      //initialize
-      this.initializeJobValues();
-      this.userStatData_ = new UserStatdata(this.jobdata, this.basicData, this.stat_table_front, this.stat_table_back, this.equip_table, this.auxiliary_table, this.link_table,this.core_table);
-      this.actual_stat = Math.floor(CubicSolver(this.spline_data,this.userStatData_.calc100dmg(this.monster_guard)));
+     
 
     }
-    else
+
+    this.initializeJobValues();
+    this.userStatData_ = new UserStatdata(this.jobdata, this.basicData, this.stat_table_front, this.stat_table_back, this.equip_table, this.auxiliary_table, this.link_table, this.core_table);
+
+  }
+
+  check_actual_stat()
+  {
+    this.actual_stat = Math.floor(CubicSolver(this.spline_data,this.userStatData_.calc100dmg(this.monster_guard)));
+    if(isNaN(this.actual_stat))
     {
-      this.initializeJobValues();
-    }
-  }
-
-  load_preset_0()
-  {
-    this.cur_preset_num = '';
-    this.load_preset();
-    
-  }
-
-  load_preset_1()
-  {
-    this.cur_preset_num = '_1';
-    this.load_preset();
-  }
-
-  check_nan(value:number)
-  {
-    if(isNaN(value))
-    {
+      this.is_NAN = true;
       return '입력 수치 확인';
+
     }
     else
     {
-      return value;
+      this.is_NAN = false;
+      return this.actual_stat;
     }
 
 
