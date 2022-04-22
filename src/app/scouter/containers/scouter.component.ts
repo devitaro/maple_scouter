@@ -18,6 +18,9 @@ import { coreData, skillName } from 'src/app/data/job_core';
 })
 export class ScouterComponent implements OnChanges {
 
+  whole_preset:string[] = [];
+  max_preset_size = 3;
+
   job_names = jobs;
   grade_names = grades;
   equip_levels = equipLevel;
@@ -34,7 +37,7 @@ export class ScouterComponent implements OnChanges {
 
   userStatData_:UserStatdata;
 
-  cur_preset_num:number = 1;
+  cur_preset_num:number = 0;
   is_NAN:boolean = false;
  
   stat_table_front :number[] = [61638, 60038, 7494];
@@ -42,7 +45,7 @@ export class ScouterComponent implements OnChanges {
   link_table :number[] = [6,6,2,2,2,0];
   equip_table :number[] = [129, 13200, 4400, 150, 440];
   auxiliary_table :number[] = [0,0,0,0,0,0];
-  core_table :number[] = [30,60,60,30,30,30,0,0,0,0,0,0,0];
+  core_table :number[] = [60,60,60,60,60,60];
 
   stat_table_list :string[]=[];
   stat_table : string[] = statListCommon;
@@ -180,8 +183,8 @@ export class ScouterComponent implements OnChanges {
 
   save()
   {
-    localStorage.setItem('user_data'+this.cur_preset_num.toString(), JSON.stringify(
-      {
+    var json_data = {
+      preset_num: this.cur_preset_num,
       job_name: this.jobName,
       basic_data: this.basicData,
       stat_table_front : this.stat_table_front,
@@ -190,33 +193,66 @@ export class ScouterComponent implements OnChanges {
       equip_table : this.equip_table,
       auxiliary_table : this.auxiliary_table,
       core_table : this.core_table,
-      }
-    ));
+      };
+    
 
+    this.whole_preset[this.cur_preset_num] = JSON.stringify(json_data);
+
+    var whole_json = new Array();
+
+    for (var ii = 0; ii<this.whole_preset.length; ii++)
+    {
+      whole_json.push(JSON.parse(this.whole_preset[ii]));
+    }
+
+
+    console.log(whole_json);
+    
+    localStorage.setItem('user_data', JSON.stringify(whole_json));
     this.snackbar.open(
-      '프리셋 '+this.cur_preset_num.toString()+'번에 저장 완료',
+      '저장 완료',
       '닫기'
     );
+
+
   }
 
   load_preset()
   {
-    const saved_user_data = JSON.parse(localStorage.getItem('user_data'+this.cur_preset_num.toString())!);
-    console.log(saved_user_data.length)
+    const saved_user_data = JSON.parse(localStorage.getItem('user_data')!);
+
     if(saved_user_data)
     {
-      this.jobName = saved_user_data.job_name;
-      this.basicData = saved_user_data.basic_data;
-      this.stat_table_front = saved_user_data.stat_table_front;
-      this.stat_table_back = saved_user_data.stat_table_back;
-      this.link_table = saved_user_data.link_table;
-      this.equip_table = saved_user_data.equip_table;
-      this.auxiliary_table = saved_user_data.auxiliary_table;
-      this.core_table = saved_user_data.core_table;
+      console.log('chang')
+      console.log(saved_user_data.length)
+      for(var ii = 0; ii< saved_user_data.length; ii++)
+      {
+        if(saved_user_data[ii].preset_num == this.cur_preset_num)
+        {
+          this.jobName = saved_user_data[ii].job_name;
+          this.basicData = saved_user_data[ii].basic_data;
+          this.stat_table_front = saved_user_data[ii].stat_table_front;
+          this.stat_table_back = saved_user_data[ii].stat_table_back;
+          this.link_table = saved_user_data[ii].link_table;
+          this.equip_table = saved_user_data[ii].equip_table;
+          this.auxiliary_table = saved_user_data[ii].auxiliary_table;
+          this.core_table = saved_user_data[ii].core_table;
+        }
 
-     
+      }
 
     }
+    // else
+    // {
+    //   this.jobName = '나이트로드';
+    //   this.basicData = [0,275,25,0,0];
+    //   this.stat_table_front = [61638, 60038, 7494];
+    //   this.stat_table_back = [52862565, 55, 387, 95.5, 99];
+    //   this.link_table = [6,6,2,2,2,0];
+    //   this.equip_table = [129, 13200, 4400, 150, 440];
+    //   this.auxiliary_table = [0,0,0,0,0,0];
+    //   this.core_table = [60,60,60,60,60,60];
+    // }
 
     this.initializeJobValues();
     this.userStatData_ = new UserStatdata(this.jobdata, this.basicData, this.stat_table_front, this.stat_table_back, this.equip_table, this.auxiliary_table, this.link_table, this.core_table);
@@ -239,6 +275,11 @@ export class ScouterComponent implements OnChanges {
     }
 
 
+  }
+
+  calculate_fire_water()
+  {
+    
   }
 
 
