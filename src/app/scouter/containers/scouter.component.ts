@@ -293,8 +293,7 @@ export class ScouterComponent implements OnChanges {
 
       var stat_percentage = (user_dmg/water_fire_dmg) * 100;
 
-      console.log(stat_percentage);
-      
+
       
       if(stat_percentage>280)
       {
