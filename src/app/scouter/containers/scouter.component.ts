@@ -34,6 +34,8 @@ export class ScouterComponent implements OnChanges {
   jobTemplateData:TemplateData[] = [];
   job100dmgarr:number[]=[];
   jobMainstatarr:number[]=[];
+  jobstatarr_for_waterfire:number[]=[];
+
 
   userStatData_:UserStatdata;
 
@@ -62,6 +64,9 @@ export class ScouterComponent implements OnChanges {
   actual_final_dmg : number = 0;
 
   spline_data:number[] = [];
+  spline_data_waterfire:number[] = [];
+  water_fire_label:string = 'moderate';
+  water_fire_info:string = '적정';
 
   actual_stat:number = 0;
 
@@ -128,15 +133,18 @@ export class ScouterComponent implements OnChanges {
       this.jobTemplateData[ii] = new TemplateData(templategrades[ii],this.jobdata,this.monster_guard, this.actual_final_dmg, this.basicData[4]);
       this.jobMainstatarr[ii]=gradeMainStat[templategrades[ii]];
       this.job100dmgarr[ii]=this.jobTemplateData[ii].calc100dmg();
+      //모해, 쿨감 보정 별도로 적용
+      this.jobstatarr_for_waterfire[ii]= Math.floor((this.jobTemplateData[ii].totalStat_.main_stat_pure+70)* (100+this.jobTemplateData[ii].totalStat_.main_stat_rate+this.jobTemplateData[ii].cool_comp_stat)/100) + this.jobTemplateData[ii].totalStat_.main_stat_abs;
     }
 
     console.log(this.jobMainstatarr);
+    console.log(this.jobstatarr_for_waterfire);
     console.log(this.job100dmgarr);
 
     //추세선생성
 
     this.spline_data = polynomial_regression(this.jobMainstatarr,this.job100dmgarr,3);
-
+    this.spline_data_waterfire = polynomial_regression(this.jobstatarr_for_waterfire,this.job100dmgarr,3);
 
   }
 
@@ -265,22 +273,75 @@ export class ScouterComponent implements OnChanges {
     if(isNaN(this.actual_stat))
     {
       this.is_NAN = true;
+      this.water_fire_info = '입력 수치 확인';
+      this.water_fire_label = 'satelite';
+
+
       return '입력 수치 확인';
+
+      
 
     }
     else
     {
       this.is_NAN = false;
+      
+      var user_stat = this.stat_table_front[0];
+
+      var user_dmg = this.userStatData_.calc100dmg(this.monster_guard);
+
+      var water_fire_dmg = this.spline_data_waterfire[0] + user_stat* this.spline_data_waterfire[1] + user_stat* user_stat* this.spline_data_waterfire[2] + user_stat* user_stat* user_stat* this.spline_data_waterfire[3];
+
+      var stat_percentage = (user_dmg/water_fire_dmg) * 100;
+
+      console.log(stat_percentage)
+      
+      if(stat_percentage>280)
+      {
+        this.water_fire_info = '새틀라이트';
+        this.water_fire_label = 'satelite';
+      }
+      else if(stat_percentage>160)
+      {
+        this.water_fire_info = '지옥불';
+        this.water_fire_label = 'hell-fire';
+      }
+      else if(stat_percentage>120)
+      {
+        this.water_fire_info = '불';
+        this.water_fire_label = 'fire';
+      }
+      else if(stat_percentage>100)
+      {
+        this.water_fire_info = '적정';
+        this.water_fire_label = 'moderate';
+      }
+      else if(stat_percentage>95)
+      {
+        this.water_fire_info = '물';
+        this.water_fire_label = 'water';
+      }
+      else if(stat_percentage>85)
+      {
+        this.water_fire_info = '맹물';
+        this.water_fire_label = 'super-water';
+      }
+      else
+      {
+        this.water_fire_info = '스탯딸';
+        this.water_fire_label = 'satelite';
+      }
+
+
+
+
+
       return this.actual_stat;
     }
 
 
   }
 
-  calculate_fire_water()
-  {
-    
-  }
 
 
 }

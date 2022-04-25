@@ -1,7 +1,7 @@
 <div class="container">
   <div class="flex-center">
     <h1 class="mat-h1">
-      환산 주스탯 계산 (Ver 220422, KMS 1.2.364)
+      환산 주스탯 계산 (Ver 220425, KMS 1.2.364)
     </h1>
   </div>
   <div>
@@ -80,7 +80,7 @@
         <div>
           <mat-label> 스탯창 기본 조건 </mat-label>
           <h4 class="mat-h4">
-            시드링착용, 노도핑, 풀링크, 쓸만한 컴뱃 오더스 쓰지 않음
+            시드링착용, 노도핑, 풀링크, 소울게이지 0, 쓸스킬 X
           </h4>
           <mat-label> 직업별 버프 조건 </mat-label>
           <h4 class="mat-h4">
@@ -123,9 +123,9 @@
   </div>
   <div>
     
-    <mat-card class="w-240">
-      <mat-card-subtitle> 최종 계산 및 스펙 저장 </mat-card-subtitle>
-      <mat-card-content>
+    <mat-card class="w-240" >
+      <mat-card-subtitle class="center-align"> 최종 계산 및 스펙 저장 </mat-card-subtitle>
+      <mat-card-content class="center-align">
         <div>
           <button mat-raised-button color="accent" (click)="save()">스펙 저장</button>
         </div>
@@ -140,12 +140,14 @@
         </div>
         
         <div>
-          <h3>환산 주스탯 값 (ver 220407)</h3>
-          <h1 class="mat-h1">
+          <h3>환산 주스탯 값 (ver 220425)</h3>
+          <h1>
             {{check_actual_stat()}}
+          </h1>
+          <h1 [ngClass]="water_fire_label" >
+            {{water_fire_info}}
           </h1>  
         </div>
-        
 
       </mat-card-content>
     </mat-card>

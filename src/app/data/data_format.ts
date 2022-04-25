@@ -1,58 +1,58 @@
 import { addFinal,
-        coolReduce_final_calc,
-        equilibrium_final_calc,
-        infinity_final_calc,
-        passive_final_calc,
-        recycle_final_calc,
-        template_infinity_final_calc } from "../functions/final_comp";
+    coolReduce_final_calc,
+    equilibrium_final_calc,
+    infinity_final_calc,
+    passive_final_calc,
+    recycle_final_calc,
+    template_infinity_final_calc } from "../functions/final_comp";
 import { optimizeHyperUnion,
-        optimizeHyperUnion_demon,
-        optimizeHyperUnion_xenon } from "../functions/optimizer";
+    optimizeHyperUnion_demon,
+    optimizeHyperUnion_xenon } from "../functions/optimizer";
 import {equipAuxiliary,
-        equipCool,
-        equipCoolComp,
-        equipCoolComp_demon,
-        equipCoolComp_xenon,
-        equipCoreAdd,
-        equipCoreAdd_demon,
-        equipCoreAdd_xenon,
-        equipFarm,
-        equipFarm_demon,
-        equipFarm_xenon,
-        equipjobWeapattComp,
-        equipLevel,
-        equipLevelSmooth,
-        equipLevel_demon,
-        equipLevel_xenon,
-        equipLumiComp,
-        equipRecycleComp,
-        equipSubStat,
-        equipSubweap_case1,
-        equipSubweap_case2,
-        equipUnionReserved,
-        gradeNames } from "./equip_data";
+    equipCool,
+    equipCoolComp,
+    equipCoolComp_demon,
+    equipCoolComp_xenon,
+    equipCoreAdd,
+    equipCoreAdd_demon,
+    equipCoreAdd_xenon,
+    equipFarm,
+    equipFarm_demon,
+    equipFarm_xenon,
+    equipjobWeapattComp,
+    equipLevel,
+    equipLevelSmooth,
+    equipLevel_demon,
+    equipLevel_xenon,
+    equipLumiComp,
+    equipRecycleComp,
+    equipSubStat,
+    equipSubweap_case1,
+    equipSubweap_case2,
+    equipUnionReserved,
+    gradeNames } from "./equip_data";
 import { coreData, skillName } from "./job_core";
 import {jobNames,
-        jobPassive_base,
-        jobSubweapBase,
-        jobAbilityInfo,
-        jobBuffCond,
-        jobUseCoolReduce,
-        jobUsebuffFinal,
-        jobUseCriRein,
-        jobSubweaptype,
-        jobMainWeapAtt,
-        jobLinkAbilities_main,
-        jobPassive_Lv1,
-        jobLinkAbilities_semi,
-        jobUnion,
-        jobCoreStats,
-        jobFarm,
-        jobStatCond,
-        jobCReff,
-        jobProperty,
-        jobAddIGR,
-        jobDopingData,
+    jobPassive_base,
+    jobSubweapBase,
+    jobAbilityInfo,
+    jobBuffCond,
+    jobUseCoolReduce,
+    jobUsebuffFinal,
+    jobUseCriRein,
+    jobSubweaptype,
+    jobMainWeapAtt,
+    jobLinkAbilities_main,
+    jobPassive_Lv1,
+    jobLinkAbilities_semi,
+    jobUnion,
+    jobCoreStats,
+    jobFarm,
+    jobStatCond,
+    jobCReff,
+    jobProperty,
+    jobAddIGR,
+    jobDopingData,
 } from "./job_data";
 
 
@@ -187,11 +187,11 @@ export class statData
     }
 
 
-    
+
 }
 
 export class jobData
-{
+    {
     jobName_:string;
 
     jobBuffCond_:string;
@@ -297,7 +297,7 @@ export class jobData
         var final_coeff = (100 + statinfo.final_dmg) / 100;
         var ign_coeff = Math.max(0, 1 - monster_guard / 100 * (1-statinfo.ign_dmg / 100));
         var cri_coeff = Math.min(statinfo.cri_rate,100)/100 * (0.35 + statinfo.cri_dmg/100) + 1;
-       
+    
         // console.log("coeffs")
         // console.log(prof_coeff)
         // console.log(weap_coeff)
@@ -317,7 +317,7 @@ export class jobData
 
 export class TemplateData
 {
-    
+
     jobData_:jobData;
     jobName_:jobNames;
     gradeName_:gradeNames;
@@ -328,12 +328,13 @@ export class TemplateData
 
     petit_rumi:number = 0;
     monster_gaurd_rate:number;
-    
+
     totalStat_ :statData;
     templatejobStat_:statData;
     gradeEquipStat_ :statData;
     optimizeResult_:statData;
 
+    cool_comp_stat:number;
 
 
 
@@ -443,21 +444,23 @@ export class TemplateData
             this.petit_rumi = Math.floor(this.level_/20);
         }
         //쿨감 보정
+        this.cool_comp_stat = 0;
         if(jobData.coolReduce_ == 1)
         {
             if(this.jobName_ == '제논')
             {
-                this.gradeEquipStat_.main_stat_rate -= equipCoolComp_xenon[gradeName][jobCReff[jobData.jobName_][3]];
+                this.cool_comp_stat = equipCoolComp_xenon[gradeName][jobCReff[jobData.jobName_][3]];
             }
             else if(this.jobName_ == '데몬어벤져')
             {
-                this.gradeEquipStat_.main_stat_rate -= equipCoolComp_demon[gradeName][jobCReff[jobData.jobName_][3]];
+                this.cool_comp_stat = equipCoolComp_demon[gradeName][jobCReff[jobData.jobName_][3]];
             }
             else
             {
-                this.gradeEquipStat_.main_stat_rate -= equipCoolComp[gradeName][jobCReff[jobData.jobName_][3]];
+                this.cool_comp_stat = equipCoolComp[gradeName][jobCReff[jobData.jobName_][3]];
             }
-           
+            this.gradeEquipStat_.main_stat_rate -= this.cool_comp_stat;
+        
         }
         
 
@@ -486,7 +489,7 @@ export class TemplateData
         if(this.jobData_.buffFinal_ == 2)
         {
             this.totalStat_.final_dmg = addFinal(this.totalStat_.final_dmg,equilibrium_final_calc(equipLumiComp[this.gradeName_]));
-           
+        
         }
         else if(this.jobData_.buffFinal_ == 1)
         {
@@ -560,7 +563,7 @@ export class UserStatdata
     core_efficiency:number = 1;
 
 
-    
+
 
     constructor(jobData:jobData, baseData:number[], statData_front:number[], statData_back:number[], equipData:number[], auxiliaryData:number[],linkData:number[],coreTable:number[])
     {
@@ -622,7 +625,7 @@ export class UserStatdata
         //calculate pure stat
         var stat_w_per = this.stat_wo_hero - this.stat_abs;
         this.stat_pure = Math.ceil(stat_w_per/(1+this.stat_rate/100));
-       
+    
         //데벤져 진짜 아아아아아아아아아아아아ㅏㅇ
         var actual_main_stat = this.stat_w_hero;
         if(this.jobName == '데몬어벤져')
@@ -635,8 +638,8 @@ export class UserStatdata
             var item_hp = this.stat_w_hero - level_hp;
             actual_main_stat = level_hp / 14 + item_hp / 17.5;          
         }
-         //calculate att_mag
-         var job_weap_coeff = jobData.jobProperty_[1];
+        //calculate att_mag
+        var job_weap_coeff = jobData.jobProperty_[1];
 
         this.att_mag = Math.ceil(this.stat_atk/((this.sub_stat+4*actual_main_stat)*0.01*job_weap_coeff*(1+this.dmg*0.01)*(1+this.final_dmg*0.01)*(1+this.att_mag_rate*0.01)))
         
