@@ -133,7 +133,8 @@ export class ScouterComponent implements OnChanges {
       this.jobTemplateData[ii] = new TemplateData(templategrades[ii],this.jobdata,this.monster_guard, this.actual_final_dmg, this.basicData[4]);
       this.jobMainstatarr[ii]=gradeMainStat[templategrades[ii]];
       this.job100dmgarr[ii]=this.jobTemplateData[ii].calc100dmg();
-      this.jobstatarr_for_waterfire[ii]= Math.floor(this.jobTemplateData[ii].totalStat_.main_stat_pure* (100+this.jobTemplateData[ii].totalStat_.main_stat_rate+this.jobTemplateData[ii].cool_comp_stat)/100) + this.jobTemplateData[ii].totalStat_.main_stat_abs;
+      //모해, 쿨감 보정 별도로 적용
+      this.jobstatarr_for_waterfire[ii]= Math.floor((this.jobTemplateData[ii].totalStat_.main_stat_pure+70)* (100+this.jobTemplateData[ii].totalStat_.main_stat_rate+this.jobTemplateData[ii].cool_comp_stat)/100) + this.jobTemplateData[ii].totalStat_.main_stat_abs;
     }
 
     console.log(this.jobMainstatarr);
