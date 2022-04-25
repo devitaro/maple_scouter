@@ -1,0 +1,29 @@
+.container {
+    margin: 20px;
+  }
+  
+  .layout {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  
+  .script {
+    height: 240px;
+    border: 1px solid #ccc;
+  }
+  
+  .grow {
+    flex-grow: 1;
+  }
+  
+  .mat-radio-button ~ .mat-radio-button {
+    margin-left: 12px;
+  }
+  
+  .heading-button {
+    margin-left: 12px;
+    margin-bottom: 16px;
+  }
+

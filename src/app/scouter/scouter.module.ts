@@ -26,11 +26,12 @@ import { EquipTableComponent } from './containers/equip-table/equip-table.compon
 import { LinkTableComponent } from './containers/link-table/link-table.component';
 import { CoreTableComponent } from './containers/core-table/core-table.component';
 import { AuxiliaryTableComponent } from './containers/auxiliary-table/auxiliary-table.component';
-
+import { PresetComponent } from '../preset.component';
 
 
 @NgModule({
   declarations: [
+    PresetComponent,
     ScouterComponent,
     StatTableComponent,
     EquipTableComponent,
