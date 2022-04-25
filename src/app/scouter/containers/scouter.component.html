@@ -1,9 +1,13 @@
 <div class="container">
   <div class="flex-center">
     <h1 class="mat-h1">
-      환산 주스탯 계산 (Ver 220407, KMS 1.2.362)
+      환산 주스탯 계산 (Ver 220425, KMS 1.2.364)
     </h1>
   </div>
+  <div>
+
+  </div>
+
   <div class="layout">
     <mat-card>
       <mat-card-subtitle>직업 정보</mat-card-subtitle>
@@ -43,9 +47,9 @@
           <mat-select
           [(ngModel)]="monster_guard"
           (selectionChange)="initializeJobValues()">
-              <mat-option [value]="50">방어율 50%</mat-option>
-              <mat-option [value]="300">방어율 300%</mat-option>
-              <mat-option [value]="380">방어율 380%</mat-option>
+              <mat-option [value]="50">50% (무릉)</mat-option>
+              <mat-option [value]="300">300% (보스)</mat-option>
+              <mat-option [value]="380">380% (보스)</mat-option>
             </mat-select>
       </mat-form-field>
       </div>
@@ -55,7 +59,7 @@
               <input
                 type="number"
                 min = "0"
-                min = "300"
+                max = "300"
                 matInput
                 [(ngModel)]="basicData[1]"
                 (ngModelChange)="initializeJobValues()"
@@ -119,9 +123,9 @@
   </div>
   <div>
     
-    <mat-card class="w-240">
-      <mat-card-subtitle> 최종 계산 및 스펙 저장 </mat-card-subtitle>
-      <mat-card-content>
+    <mat-card class="w-240" >
+      <mat-card-subtitle class="center-align"> 최종 계산 및 스펙 저장 </mat-card-subtitle>
+      <mat-card-content class="center-align">
         <div>
           <button mat-raised-button color="accent" (click)="save()">스펙 저장</button>
         </div>
@@ -136,16 +140,19 @@
         </div>
         
         <div>
-          <h3>환산 주스탯 값 (ver 220407)</h3>
-          <h1 class="mat-h1">
-            {{check_nan(actual_stat)}}
+          <h3>환산 주스탯 값 (ver 220425)</h3>
+          <h1>
+            {{check_actual_stat()}}
+          </h1>
+          <h1 [ngClass]="water_fire_label" >
+            {{water_fire_info}}
           </h1>  
         </div>
 
       </mat-card-content>
     </mat-card>
   </div>
-
+  
   
 
 
