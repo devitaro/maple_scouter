@@ -445,6 +445,8 @@ export const equipLumiComp: Record<templategradeNames, number> =
     '9칠흑 2여명': 108,
 }
 
+
+// 반레전둘둘 이하 스펙 핑아일체    레전둘둘 이상 스펙 예핑
 export const titleLevel: Record<gradeNames, number[]> =
 {
     '킹 오브 루타비스': [8, 0, 0, 8, 0, 0, 3, 0, 0, 5, 0, 5, 0, 0],
